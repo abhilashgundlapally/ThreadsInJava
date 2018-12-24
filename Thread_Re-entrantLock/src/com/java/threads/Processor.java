@@ -1,0 +1,65 @@
+package com.java.threads;
+
+import java.util.Scanner;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Processor
+{
+	private Lock    	lock = new ReentrantLock();
+	private Condition 	cond = lock.newCondition();
+	private int 		count = 0;
+	
+	public Processor(){}
+	
+	private void increment()
+	{
+		for( int i = 0 ; i < 1000 ; i++ )
+		{
+			count++;
+		}
+	}
+	
+	public void firstThread( ) throws InterruptedException
+	{
+		lock.lock();
+		System.out.println("Waiting....");
+		cond.await();
+		System.out.println("Resuming....");
+		try
+		{
+			increment();
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	public void secondThread( ) throws InterruptedException
+	{
+		Thread.sleep(1000);
+		
+		lock.lock();
+		System.out.println("Enter key...");
+		String nextLine = new Scanner(System.in).nextLine();
+		cond.signal();
+		System.out.println("Got key ....");
+		try
+		{
+			increment();
+		}
+		finally
+		{
+			lock.unlock();
+		}
+
+	}
+
+	public void finished( )
+	{
+		System.out.println("Count = " + count );
+	}
+	
+}
